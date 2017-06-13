@@ -4,4 +4,6 @@
 # the given values with your own.
 #--------------------------------------------------------------------
 
-#contrib-location: /home/$USER/contrib/
+#contrib-location: /home/brj33/contrib/
+#git-username: paranoid4ndr0id
+#modules-to-update: metatag, google_analytics
