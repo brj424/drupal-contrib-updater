@@ -131,7 +131,8 @@ def verify_prompts():
 		print '\nWarning!\nPlease submit a proper value:'
 		init_prompts()
 
-
+'''
+TODO: Make this create new branch in the contrib repo.
 def new_git_branch():
     """Creates new git branch containing updated modules."""
     global git_username, date
@@ -140,7 +141,7 @@ def new_git_branch():
     rc = subprocess.call(['git', 'checkout', '-b', date + '-' + git_username])
     if verbose:
 	    print '[*] New git branch: ' + date + '-' + username
-
+'''
 
 def fill_proj_urls():
 	"""Gets URLs for every project in contrib path."""
@@ -225,6 +226,7 @@ def cleanup():
 	rc = subprocess.call(['rm', '-rf', tmp_dirname], cwd=contrib_path)
 
 
+'''TODO: Make this push to the contrib repo.
 def push_git_branch():
     """Pushes branch to Git."""
     current_branch = subprocess.Popen(['git', 'branch'],
@@ -239,16 +241,16 @@ def push_git_branch():
 		rc = subprocess.call(['git', 'commit', '-m', commit_msg])
 		current_branch = current_branch[2::].rstrip()
 		rc = subprocess.call(['git', 'push', '--set-upstream', 'origin', current_branch])
-
+'''
 
 def main():
 	read_config()
-	new_git_branch()
+	#new_git_branch()
 	fill_proj_urls()
 	create_tmp_download_dir()
 	get_project_info()
 	cleanup()
-	push_git_branch()
+	#push_git_branch()
 
 
 """PROCESS"""

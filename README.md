@@ -2,6 +2,8 @@
 Update Drupal contrib modules in seconds, without having to set up a site or
 open a browser!
 
+Coming soon: The ability to push the updated repo through this script.
+
 
 ## Installation
 Download the repo and run `$ pip install -r requirements.txt` to install
