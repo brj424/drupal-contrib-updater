@@ -4,13 +4,11 @@ open a browser!
 
 
 ## Installation
----------------
 Download the repo and run `$ pip install -r requirements.txt` to install
 _drupdate_'s dependencies.
 
 
 ## Configuration (Optional)
----------------------------
 Open `config.yml` in your favorite text editor, and modify the settings
 to suit your needs.
 
@@ -19,7 +17,6 @@ enter relevant information during runtime.
 
 
 ## Usage
---------
 By default, you can run `$ python drupdate.py` and it will ask you for
 whatever information it needs from you.
 
@@ -28,7 +25,6 @@ it needs from there.
 
 
 ## Why use this over Drush?
----------------------------
 First, if Drush works for you, use it. It has a much larger base for
 contributors, so it's constantly being updated.
 
