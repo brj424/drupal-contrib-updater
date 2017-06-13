@@ -1,0 +1,7 @@
+# drupdate -- config.yml
+# =========================
+# To use, uncomment the below line(s) you find necessary, and replace
+# the given values with your own.
+#--------------------------------------------------------------------
+
+#contrib-location: /home/$USER/contrib/
