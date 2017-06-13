@@ -88,20 +88,22 @@ def exit_program(reason):
 
 def read_config():
 	"""Tries to read from config.yml"""
-	global contrib_path, git_username
+	global contrib_path, git_username, updating_modules
 	with open("config.yml", 'r') as config_yml:
 		try:
 			config_settings = yaml.load(config_yml)
-			if 'git-username' in config_settings:
-				git_username = config_settings['git-username']
-			if 'contrib-location' in config_settings:
-				contrib_path = config_settings['contrib-location']
-			if 'modules-to-update' in config_settings:
-				list_mods = config_settings['modules-to-update'].split(',')
-				if list_mods:
-					for m in list_mods:
-						m = m.strip()
-						updating_modules.append(m)
+			if config_settings != None:
+				if 'git-username' in config_settings:
+					git_username = config_settings['git-username']
+				if 'contrib-location' in config_settings:
+					contrib_path = config_settings['contrib-location']
+				if 'modules-to-update' in config_settings:
+					list_mods = config_settings['modules-to-update'].split(',')
+					if list_mods:
+						updating_modules = []
+						for m in list_mods:
+							m = m.strip()
+							updating_modules.append(m)
 			init_prompts()
 		except yaml.YAMLError as exc:
 			print exc
@@ -122,13 +124,15 @@ def init_prompts():
 
 
 def verify_prompts():
-    global contrib_path, git_username, updating_modules
-    if not contrib_path or not git_username or not updating_modules[0].strip() or updating_modules[0] == 'None':
-        print '\nWarning!\nPlease submit a proper value:'
-        init_prompts()
+	global contrib_path, git_username, updating_modules
+	if contrib_path and contrib_path[-1] != '/':
+		contrib_path += '/'
+	if not contrib_path or not git_username or not updating_modules[0].strip() or updating_modules[0] == 'None':
+		print '\nWarning!\nPlease submit a proper value:'
+		init_prompts()
 
 
-def new_git_branch(proj_name):
+def new_git_branch():
     """Creates new git branch containing updated modules."""
     global git_username, date
     rc = subprocess.call(['git', 'checkout', 'master'])

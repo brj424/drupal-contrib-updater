@@ -20,8 +20,26 @@ enter relevant information during runtime.
 By default, you can run `$ python drupdate.py` and it will ask you for
 whatever information it needs from you.
 
-If you've modified `config.yml`, then `drupdate.py` will read the information
+If you **did** modify `config.yml`, then `drupdate.py` will read the information
 it needs from there.
+
+If you **did not** modifiy `config.yml`, then you can either:
+1. Provide arguments:
+
+    `$ python drupdate.py -p /home/paranoid4ndr0id/contrib -u paranoid4ndr0id -m 'metatag google_analytics'`
+
+2. Enter the information when prompted:
+
+    `$ python drupdate.py`
+
+        Path containing contrib modules (ex. /home/your_username/drupal8/contrib ):
+        /home/paranoid4ndr0id/contrib
+
+        Git username:
+        paranoid4ndr0id
+
+        Modules to update (type * for all):
+        metatag google_analytics
 
 
 ## Why use this over Drush?
