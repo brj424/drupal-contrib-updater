@@ -20,6 +20,9 @@ enter relevant information during runtime.
 By default, you can run `$ python drupdate.py` and it will ask you for
 whatever information it needs from you.
 
+If you've modified `config.yml`, then it will read the information it needs
+from there.
+
 
 ## Why use this over Drush?
 First, if Drush works for you, use it. It has a much larger base for
