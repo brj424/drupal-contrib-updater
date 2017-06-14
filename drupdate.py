@@ -47,7 +47,7 @@ parser.add_option("-p", "--path", "--contrib", dest="contrib_path", \
 parser.add_option("-u", "--username", "--user", dest="username", \
                   help="Set git username.", metavar='USERNAME')
 parser.add_option("-m", "--modules", dest="modules", \
-                  help="Specify modules to update.", metavar='\'MODULE-1 MODULE-2\'')
+                  help="Specify modules to update. Multiple modules should have single-quotes surrounding them.", metavar='\'MODULE-1 MODULE-2\'')
 (options, args) = parser.parse_args()
 
 # Prompted user for project info

@@ -12,8 +12,14 @@ _drupdate_'s dependencies.
 Open `config.yml` in your favorite text editor, and modify the settings
 to suit your needs.
 
-If you do not modify `config.yml`, running `drupdate.py` will ask you to
+If you do not modify `config.yml`, running `$ python drupdate.py` will ask you to
 enter relevant information during runtime.
+
+Sample `config.yml`:
+
+    contrib-location: /home/paranoid4ndr0id/contrib/
+    git-username: paranoid4ndr0id
+    modules-to-update: metatag, google_analytics
 
 
 ## Usage
@@ -22,9 +28,12 @@ enter relevant information during runtime.
 By default, you can run `$ python drupdate.py` and it will ask for
 whatever information it needs from you.
 
+**Force Git Support**  
+Running `$ python drupdate.py -g` will force-enable git support, so you won't
+have to enable it during runtime.
+
 **Using the Config**  
-If you **did** modify `config.yml`, then `drupdate.py` will read the information
-it needs from there.
+If you **did** modify `config.yml`, then `$ python drupdate.py` will read the information it needs from there.
 
 **Skipping the Config**  
 If you **did not** modifiy `config.yml`, then you can either:
@@ -42,7 +51,7 @@ If you **did not** modifiy `config.yml`, then you can either:
         Modules to update (type * for all):
         metatag google_analytics
 
-**Help**
+**Help**  
 `$ python drupdate.py -h` or `$ python drupdate.py --help` has a list of neat features you may want to take advantage of, so be sure to check it out.
 
 
