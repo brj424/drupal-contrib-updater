@@ -40,8 +40,9 @@ from bs4 import BeautifulSoup
 """ GLOBALS """
 # Get & Set Options / Args
 parser = OptionParser(usage="usage: %prog [options]", version="%prog 1.0")
-parser.add_option("-v", "--verbose", action="store_true", dest="verbose", \
-                  help="Print each step made by the program.")
+parser.add_option("-g", "--git", action="store_true", dest="enabled_git", \
+                  help="Push a new branch to your git repo at the end \
+                        of this script.")
 parser.add_option("-p", "--path", "--contrib", dest="contrib_path", \
                   help="Set contrib module path.", metavar='PATH')
 parser.add_option("-u", "--username", "--user", dest="username", \
@@ -51,11 +52,12 @@ parser.add_option("-m", "--modules", dest="modules", \
 (options, args) = parser.parse_args()
 
 # Prompted user for project info
-verbose          = options.verbose
 contrib_path     = options.contrib_path
 git_username     = options.username
+enabled_git       = options.enabled_git
 updating_modules = []
 
+# Fill updating_modules from -m.
 list_mods = str(options.modules).split(' ')
 if list_mods:
     for m in list_mods:
@@ -86,6 +88,23 @@ def exit_program(reason):
     exit()
 
 
+def display_banner():
+    banner = """
+          _                      _       _
+         | |                    | |     | |
+       __| |_ __ _   _ _ __   __| | __ _| |_ ___
+      / _` | '__| | | | '_ \ / _` |/ _` | __/ _ \\
+     | (_| | |  | |_| | |_) | (_| | (_| | ||  __/
+      \__,_|_|   \__,_| .__/ \__,_|\__,_|\__\___|
+                      | |
+                      |_|
+
+     Version 1.01 - http://github.com/brj424/drupdate
+
+    """
+    print banner
+
+
 def read_config():
     """Tries to read from config.yml"""
     global contrib_path, git_username, updating_modules
@@ -93,7 +112,7 @@ def read_config():
         try:
             config_settings = yaml.load(config_yml)
             if config_settings != None:
-                if 'git-username' in config_settings:
+                if enabled_git and 'git-username' in config_settings:
                     git_username = config_settings['git-username']
                 if 'contrib-location' in config_settings:
                     contrib_path = config_settings['contrib-location']
@@ -116,7 +135,7 @@ def init_prompts():
     if not contrib_path:
         contrib_path = raw_input("\nPath containing contrib modules (ex." \
                                 " /home/your_username/drupal8/contrib ):\n")
-    if not git_username:
+    if enabled_git and not git_username:
         git_username = raw_input("\nGit username:\n")
     if not updating_modules or updating_modules[0] == 'None' or not updating_modules[0].strip():
         updating_modules[0] = raw_input("\nModules to update (type * for all):\n")
@@ -125,23 +144,23 @@ def init_prompts():
 
 def verify_prompts():
     global contrib_path, git_username, updating_modules
+    # contrib_path needs to end with a / for when we traverse its directory.
     if contrib_path and contrib_path[-1] != '/':
         contrib_path += '/'
-    if not contrib_path or not git_username or not updating_modules[0].strip() or updating_modules[0] == 'None':
+    if not contrib_path or (enabled_git and not git_username) or \
+       not updating_modules[0].strip() or updating_modules[0] == 'None':
         print '\nWarning!\nPlease submit a proper value:'
         init_prompts()
 
-'''
-TODO: Make this create new branch in the contrib repo.
+
 def new_git_branch():
     """Creates new git branch containing updated modules."""
-    global git_username, date
-    rc = subprocess.call(['git', 'checkout', 'master'])
-    rc = subprocess.call(['git', 'pull', 'origin', 'master'])
-    rc = subprocess.call(['git', 'checkout', '-b', date + '-' + git_username])
-    if verbose:
-        print '[*] New git branch: ' + date + '-' + username
-'''
+    global git_username, date, contrib_path
+    rc = subprocess.call(['git', 'checkout', '-b', date + '-' + git_username],
+                         cwd=contrib_path)
+    if enabled_git:
+        print '[*] New git branch: ' + date + '-' + git_username
+
 
 def fill_proj_urls():
     """Gets URLs for every project in contrib path."""
@@ -176,7 +195,6 @@ def get_project_info():
         except urllib2.HTTPError:
             print '[!] WARNING: Could not find project at ' + proj_url
             print '[-] Skipping!'
-
 
 
 def get_downloadable_files(temp_proj_download):
@@ -226,31 +244,42 @@ def cleanup():
     rc = subprocess.call(['rm', '-rf', tmp_dirname], cwd=contrib_path)
 
 
-'''TODO: Make this push to the contrib repo.
 def push_git_branch():
     """Pushes branch to Git."""
-    current_branch = subprocess.Popen(['git', 'branch'],
-                                      stdout=subprocess.PIPE)
-    current_branch = subprocess.check_output(['grep', '\*'],
-                                      stdin=current_branch.stdout)
-    choice = raw_input("You are currently on branch " + current_branch + \
-                       "Would you like to git add and git push this branch (y|n)? ")
-    if choice == 'y' or choice == 'Y':
-        rc = subprocess.call(['git', 'add', '-A'])
-        commit_msg = raw_input('Enter a Commit Message: ')
-        rc = subprocess.call(['git', 'commit', '-m', commit_msg])
-        current_branch = current_branch[2::].rstrip()
-        rc = subprocess.call(['git', 'push', '--set-upstream', 'origin', current_branch])
-'''
+    global contrib_path
+    try:
+        current_branch = subprocess.Popen(['git', 'branch'],
+                                          stdout=subprocess.PIPE,
+                                          cwd=contrib_path)
+        current_branch = subprocess.check_output(['grep', '\*'],
+                                          stdin=current_branch.stdout,
+                                          cwd=contrib_path)
+        choice = raw_input("You are currently on branch " + current_branch + \
+                           "Would you like to git add and git push this branch (y|n)? ")
+        if choice == 'y' or choice == 'Y':
+            rc = subprocess.call(['git', 'add', '-A'], cwd=contrib_path)
+            commit_msg = raw_input('Enter a Commit Message: ')
+            rc = subprocess.call(['git', 'commit', '-m', commit_msg], cwd=contrib_path)
+            current_branch = current_branch[2::].rstrip()
+            rc = subprocess.call(['git', 'push', '--set-upstream', 'origin', current_branch],
+                                 cwd=contrib_path)
+    except:
+        print '\n[!] Git push failed! Is directory a valid git repository?\n'
+        print '[*] drupdate has finished running, but was unable to git push.'
+        print '[*] Contrib modules have been updated locally.\n'
+
 
 def main():
+    display_banner()
     read_config()
-    #new_git_branch()
+    if enabled_git:
+        new_git_branch()
     fill_proj_urls()
     create_tmp_download_dir()
     get_project_info()
     cleanup()
-    #push_git_branch()
+    if enabled_git:
+        push_git_branch()
 
 
 """PROCESS"""
