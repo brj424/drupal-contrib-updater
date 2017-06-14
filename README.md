@@ -2,8 +2,6 @@
 Update Drupal contrib modules in seconds, without having to set up a site or
 open a browser!
 
-Coming soon: The ability to push the updated repo through this script.
-
 
 ## Installation
 Download the repo and run `$ pip install -r requirements.txt` to install
@@ -19,12 +17,16 @@ enter relevant information during runtime.
 
 
 ## Usage
-By default, you can run `$ python drupdate.py` and it will ask you for
+
+**Default**  
+By default, you can run `$ python drupdate.py` and it will ask for
 whatever information it needs from you.
 
+**Using the Config**  
 If you **did** modify `config.yml`, then `drupdate.py` will read the information
 it needs from there.
 
+**Skipping the Config**  
 If you **did not** modifiy `config.yml`, then you can either:
 1. Provide arguments:
 
@@ -37,11 +39,11 @@ If you **did not** modifiy `config.yml`, then you can either:
         Path containing contrib modules (ex. /home/your_username/drupal8/contrib ):
         /home/paranoid4ndr0id/contrib
 
-        Git username:
-        paranoid4ndr0id
-
         Modules to update (type * for all):
         metatag google_analytics
+
+**Help**
+`$ python drupdate.py -h` or `$ python drupdate.py --help` has a list of neat features you may want to take advantage of, so be sure to check it out.
 
 
 ## Why use this over Drush?
@@ -53,6 +55,9 @@ completely installed and setup before you can use it.
 
 _drupdate_, on the other hand, will update any or all contrib modules in any
 directory, whether or not a site is set up.
+
+On top of that, _drupdate_ features git-support. It will automatically
+create a new branch for the updates it performs, then push it to your repo.
 
 _drupdate_ is also a lot smaller than Drush. You won't have to install a
 bunch of dependencies to use it, and you won't have to familiarize yourself

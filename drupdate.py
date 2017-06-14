@@ -41,20 +41,19 @@ from bs4 import BeautifulSoup
 # Get & Set Options / Args
 parser = OptionParser(usage="usage: %prog [options]", version="%prog 1.0")
 parser.add_option("-g", "--git", action="store_true", dest="enabled_git", \
-                  help="Push a new branch to your git repo at the end \
-                        of this script.")
+                  help="Force git support.")
 parser.add_option("-p", "--path", "--contrib", dest="contrib_path", \
                   help="Set contrib module path.", metavar='PATH')
 parser.add_option("-u", "--username", "--user", dest="username", \
                   help="Set git username.", metavar='USERNAME')
 parser.add_option("-m", "--modules", dest="modules", \
-                  help="Specify modules to delete.", metavar='\'MODULE-1 MODULE-2\'')
+                  help="Specify modules to update.", metavar='\'MODULE-1 MODULE-2\'')
 (options, args) = parser.parse_args()
 
 # Prompted user for project info
 contrib_path     = options.contrib_path
 git_username     = options.username
-enabled_git       = options.enabled_git
+enabled_git      = options.enabled_git
 updating_modules = []
 
 # Fill updating_modules from -m.
@@ -131,14 +130,25 @@ def read_config():
 
 def init_prompts():
     """Prompts user for info."""
-    global contrib_path, git_username, updating_modules
+    global contrib_path, git_username, updating_modules, enabled_git
     if not contrib_path:
         contrib_path = raw_input("\nPath containing contrib modules (ex." \
                                 " /home/your_username/drupal8/contrib ):\n")
+    if enabled_git == None:
+        choice = raw_input("\nUtilize git? (y|n):\n")
+        if choice == 'y' or choice == 'Y' or choice == 'yes':
+            enabled_git = True
+        else:
+            enabled_git = False
     if enabled_git and not git_username:
         git_username = raw_input("\nGit username:\n")
     if not updating_modules or updating_modules[0] == 'None' or not updating_modules[0].strip():
-        updating_modules[0] = raw_input("\nModules to update (type * for all):\n")
+        # Modules will be inputted as a str, so we'll have to break that up.
+        mod_str = raw_input("\nModules to update (type * for all):\n")
+        mod_list = mod_str.split(' ')
+        updating_modules = [] # [0] was None, so let's start over.
+        for m in mod_list:
+            updating_modules.append(m)
     verify_prompts()
 
 
@@ -158,8 +168,7 @@ def new_git_branch():
     global git_username, date, contrib_path
     rc = subprocess.call(['git', 'checkout', '-b', date + '-' + git_username],
                          cwd=contrib_path)
-    if enabled_git:
-        print '[*] New git branch: ' + date + '-' + git_username
+    print '[*] New git branch: ' + date + '-' + git_username
 
 
 def fill_proj_urls():
@@ -270,6 +279,7 @@ def push_git_branch():
 
 
 def main():
+    global enabled_git
     display_banner()
     read_config()
     if enabled_git:
