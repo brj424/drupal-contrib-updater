@@ -12,8 +12,8 @@ _drupdate_'s dependencies.
 Open `config.yml` in your favorite text editor, and modify the settings
 to suit your needs.
 
-If you do not modify `config.yml`, running `$ python drupdate.py` will ask you to
-enter relevant information during runtime.
+If you do not modify `config.yml`, running `$ python drupdate.py` will ask you
+to enter relevant information during runtime.
 
 Sample `config.yml`:
 
@@ -33,13 +33,15 @@ Running `$ python drupdate.py -g` will force-enable git support, so you won't
 have to enable it during runtime.
 
 **Using the Config**  
-If you **did** modify `config.yml`, then `$ python drupdate.py` will read the information it needs from there.
+If you **did** modify `config.yml`, then `$ python drupdate.py` will read
+the information it needs from there.
 
 **Skipping the Config**  
 If you **did not** modifiy `config.yml`, then you can either:
 1. Provide arguments:
 
-    `$ python drupdate.py -p /home/paranoid4ndr0id/contrib -u paranoid4ndr0id -m 'metatag google_analytics'`
+    `$ python drupdate.py -p /home/paranoid4ndr0id/contrib -u paranoid4ndr0id
+      -m metatag -m google_analytics -m features`
 
 2. Enter the information when prompted:
 
@@ -48,11 +50,15 @@ If you **did not** modifiy `config.yml`, then you can either:
         Path containing contrib modules (ex. /home/your_username/drupal8/contrib ):
         /home/paranoid4ndr0id/contrib
 
+        Utilize git? (y|n):
+        n
+
         Modules to update (type * for all):
         metatag google_analytics
 
 **Help**  
-`$ python drupdate.py -h` or `$ python drupdate.py --help` has a list of neat features you may want to take advantage of, so be sure to check it out.
+`$ python drupdate.py -h` or `$ python drupdate.py --help` has a list of neat
+features you may want to take advantage of, so be sure to check it out.
 
 
 ## Why use this over Drush?
