@@ -161,7 +161,8 @@ def init_prompts():
     if not updating_modules or updating_modules[0] == 'None' \
      or not updating_modules[0].strip():
         # Modules will be inputted as a str, so we'll have to break that up.
-        mod_str = raw_input("\nModules to update (type * for all):\n")
+        mod_str = raw_input("\nModule(s) to update (separate multiple modules" \
+                            " with a space, type * for all):\n")
         mod_list = mod_str.split(' ')
         updating_modules = [] # [0] was None, so let's start over.
         for m in mod_list:
@@ -329,7 +330,7 @@ def push_git_branch():
                                  cwd=contrib_path)
     except:
         # If the above fails, it's most likely due to the user's
-        # contrib_path not being a git repo. 
+        # contrib_path not being a git repo.
         print '\n[!] Git push failed! Is directory a valid git repository?\n'
         print '[*] drupdate has finished running, but was unable to git push.'
         print '[*] Contrib modules have been updated locally.\n'
