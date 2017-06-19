@@ -11,7 +11,7 @@ __copyright__ = "Copyright 2017, University of Pennsylvania School of " \
                 "Arts and Sciences."
 __credits__   = ["Brian Jopling", "Clay Wells"]
 __license__   = "GNU GENERAL PUBLIC LICENSE"
-__version__   = "1.0.2"
+__version__   = "1.0.3"
 __status__    = "Development"
 
 """
@@ -30,6 +30,8 @@ And you're set!
 import time
 # Used for parsing config.yml
 import yaml
+# Used for user-input tab completion.
+import readline
 # Used for getting list of contribs in contrib dir.
 import os
 # Used for running bash commands.
@@ -99,7 +101,7 @@ def display_banner():
                       | |
                       |_|
 
-     Version 1.01 - http://github.com/brj424/drupdate
+   Version 1.03 - https://github.com/sas-isus/drupdate
 
     """
     print banner
@@ -108,44 +110,60 @@ def display_banner():
 def read_config():
     """Tries to read from config.yml"""
     global contrib_path, git_username, updating_modules
-    with open("config.yml", 'r') as config_yml:
-        try:
-            config_settings = yaml.load(config_yml)
-            # If config_settings isn't empty, then grab the git-username,
-            # contrib-location, and modules-to-update, if they exist.
-            if config_settings != None:
-                if enabled_git and 'git-username' in config_settings:
-                    git_username = config_settings['git-username']
-                if 'contrib-location' in config_settings:
-                    contrib_path = config_settings['contrib-location']
-                if 'modules-to-update' in config_settings:
-                    # This gets us the modules as one string.
-                    str_mods = config_settings['modules-to-update']
-                    # Break up the string based on commas.
-                    # Store as list.
-                    list_mods = str_mods.split(',')
-                    # As long as list_mods has something in it,
-                    # add the modules to updating_modules.
-                    if list_mods:
-                        updating_modules = []
-                        for m in list_mods:
-                            m = m.strip()
-                            updating_modules.append(m)
-            # Prompt user for any missing info.
-            init_prompts()
-        except yaml.YAMLError as exc:
-            print exc
-        config_yml.close()
+    try:
+        with open("config.yml", 'r') as config_yml:
+            try:
+                config_settings = yaml.load(config_yml)
+                # If config_settings isn't empty, then grab the git-username,
+                # contrib-location, and modules-to-update, if they exist.
+                if config_settings != None:
+
+                    if enabled_git and 'git-username' in config_settings:
+                        git_username = config_settings['git-username']
+
+                    if 'contrib-location' in config_settings:
+                        contrib_path = config_settings['contrib-location']
+
+                    if 'modules-to-update' in config_settings:
+                        # This gets us the modules as one string.
+                        str_mods = config_settings['modules-to-update']
+                        # Break up the string based on commas.
+                        # Store as list.
+                        list_mods = str_mods.split(',')
+                        # As long as list_mods has something in it,
+                        # add the modules to updating_modules.
+                        if list_mods:
+                            updating_modules = []
+                            for m in list_mods:
+                                m = m.strip()
+                                updating_modules.append(m)
+
+                # Prompt user for any missing info.
+                init_prompts()
+
+            except yaml.YAMLError as exc:
+                print exc
+
+            config_yml.close()
+    # Unable to open config file.
+    except IOError as exc:
+        print "[*] Could not find config.yml!"
+        print "[*] Prompting user... "
+        init_prompts()
 
 
 def init_prompts():
     """Prompts user for info."""
     global contrib_path, git_username, updating_modules, enabled_git
+
+    # Tab-completion for user-specified path.
+    readline.set_completer_delims(' \t\n')
+    readline.parse_and_bind("tab: complete")
+
     # If the user hasn't specified a path to their contrib modules,
     # ask them for one.
-    if not contrib_path:
-        contrib_path = raw_input("\nPath containing contrib modules (ex." \
-                                " /home/your_username/drupal8/contrib ):\n")
+    contrib_path = prompt_path()
+
     # If the user hasn't specified whether or not they want to use git,
     # ask them.
     if enabled_git == None:
@@ -154,10 +172,12 @@ def init_prompts():
             enabled_git = True
         else:
             enabled_git = False
+
     # If the user hasn't specified a git username (which is only used for
     # naming the git branch), ask them for one, if they are utilizing git.
     if enabled_git and not git_username:
         git_username = raw_input("\nGit username:\n")
+
     if not updating_modules or updating_modules[0] == 'None' \
      or not updating_modules[0].strip():
         # Modules will be inputted as a str, so we'll have to break that up.
@@ -167,7 +187,22 @@ def init_prompts():
         updating_modules = [] # [0] was None, so let's start over.
         for m in mod_list:
             updating_modules.append(m)
+
     verify_prompts()
+
+
+def prompt_path():
+    """Asks users to input contrib path. Ensures valid path is entered."""
+    contrib_path = None
+    if not contrib_path:
+        contrib_path = raw_input("\nPath containing contrib modules (ex." \
+                                " ~/drupal8/contrib ):\n")
+        if not os.path.isdir(os.path.expanduser(contrib_path)):
+            print "[!] Path does not exist!"
+            contrib_path = None
+            return prompt_path()
+        else:
+            return contrib_path
 
 
 def verify_prompts():
@@ -190,8 +225,8 @@ def new_git_branch():
     global git_username, date, contrib_path
     # Bash call that checkouts a new branch with the following naming
     # convention: YYYYMMDD-USER
-    rc = subprocess.call(['git', 'checkout', '-b', date + '-' + git_username],
-                         cwd=contrib_path)
+    rc = subprocess.call('cd ' + contrib_path + ' && git checkout -b' + date + \
+                        '-' + git_username, shell=True)
     print '[*] New git branch: ' + date + '-' + git_username
 
 
@@ -223,7 +258,8 @@ def create_tmp_download_dir():
     # along with their extractions.
     # This folder's contents will be moved, and the folder will be
     # deleted by the end of this script.
-    rc = subprocess.call(['mkdir', tmp_dirname], cwd=contrib_path)
+    rc = subprocess.call('cd ' + contrib_path + ' && ' + 'mkdir ' + tmp_dirname,
+                        shell=True)
 
 
 def get_project_info():
@@ -267,7 +303,7 @@ def get_downloadable_files(temp_proj_download):
     # If the user does not choose to download any of the versions,
     # prompt them again with the versions to download.
     if not proj_download:
-        print "End of possibile files. Recycling..."
+        print "[-] End of possibile files. Recycling..."
         return get_downloadable_files(temp_proj_download)
     download_project(download_link, proj_download)
 
@@ -280,26 +316,33 @@ def download_project(download_link, proj_download):
     # Add command to remove outdated project folder to rm_commands.
     # rm_commands gets used during cleanup().
     downloadto_path = contrib_path + tmp_dirname
-    rc = subprocess.call(['wget', proj_download], cwd=downloadto_path)
-    rc = subprocess.call(['tar', '-xzf', proj_download[38::]], cwd=downloadto_path)
+    rc = subprocess.call('cd ' + downloadto_path + ' && wget ' + \
+                        proj_download, shell=True)
+    rc = subprocess.call('cd ' + downloadto_path + ' && tar -xzf ' + \
+                        proj_download[38::], shell=True)
     proj_name = proj_download[38::].split('-')[0]
-    rc = subprocess.call(['rm', proj_download[38::]], cwd=downloadto_path)
-    rm_commands.append('rm -rf ' + proj_name)
+    rc = subprocess.call('cd ' + downloadto_path + ' && rm ' + \
+                        proj_download[38::], shell=True)
+    rm_commands.append('cd ' + contrib_path + ' && rm -rf ' + proj_name)
 
 
 def cleanup():
     """Moves new projects from tmp folder to contrib folder."""
-    global contrib_path, tmp_dirname, rm_commands
+    global contrib_path, tmp_dirname, rm_commands, enabled_git
     # Call all the commands in rm_commands.
     # This will remove all the outdated project directories.
     for comm in rm_commands:
-        rc = subprocess.call(comm, shell=True, cwd=contrib_path)
+        rc = subprocess.call(comm, shell=True)
     downloadto_path = contrib_path + tmp_dirname
     # Move all the directories in our tmp folder up one level, which
     # will be the user's contrib_path.
     # Then remove the temp folder.
-    rc = subprocess.call('mv * ..', shell=True, cwd=downloadto_path)
-    rc = subprocess.call(['rm', '-rf', tmp_dirname], cwd=contrib_path)
+    rc = subprocess.call('cd ' + downloadto_path + ' && mv * ..', shell=True)
+    rc = subprocess.call('cd ' + contrib_path + ' && rm -rf ' + tmp_dirname,
+                        shell=True)
+    if not enabled_git:
+        print '\n[*] Contrib modules have been updated locally.'
+        print '[*] Done!\n'
 
 
 def push_git_branch():
@@ -308,26 +351,30 @@ def push_git_branch():
     try:
         # Display list of git branches in contrib_path, and get the name
         # of the branch we are currently on.
-        current_branch = subprocess.Popen(['git', 'branch'],
+        current_branch = subprocess.Popen('cd ' + contrib_path + ' && git branch',
                                           stdout=subprocess.PIPE,
-                                          cwd=contrib_path)
-        current_branch = subprocess.check_output(['grep', '\*'],
-                                          stdin=current_branch.stdout,
-                                          cwd=contrib_path)
+                                          shell=True)
+        current_branch = subprocess.check_output('cd ' + contrib_path + \
+                                                ' && grep \*',
+                                                stdin=current_branch.stdout,
+                                                shell=True)
         # Inform user of the branch they are on, and ask if they're sure they
         # want to push to git.
-        choice = raw_input("You are currently on branch " + current_branch + \
+        choice = raw_input("[!] You are currently on branch " + current_branch + \
                            "Would you like to git add and git push this branch (y|n)? ")
         # If the user wants to push to git, we'll run Bash commands to
         # git add -A, git commit -m (where the user will be prompted to
         # enter a commit message), and git push.
         if choice == 'y' or choice == 'Y':
-            rc = subprocess.call(['git', 'add', '-A'], cwd=contrib_path)
+            rc = subprocess.call('cd ' + contrib_path + ' && git add -A',
+                                shell=True)
             commit_msg = raw_input('Enter a Commit Message: ')
-            rc = subprocess.call(['git', 'commit', '-m', commit_msg], cwd=contrib_path)
+            rc = subprocess.call('cd ' + contrib_path + ' && git commit -m ' + \
+                                commit_msg, shell=True)
             current_branch = current_branch[2::].rstrip()
-            rc = subprocess.call(['git', 'push', '--set-upstream', 'origin', current_branch],
-                                 cwd=contrib_path)
+            rc = subprocess.call('cd ' + contrib_path + ' && git push ' \
+                                '--set-upstream origin ' + current_branch,
+                                 shell=True)
     except:
         # If the above fails, it's most likely due to the user's
         # contrib_path not being a git repo.
